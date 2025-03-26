@@ -39,3 +39,4 @@ terraform.rc
 # for machine configuration
 *.zip
 *.mof
+dsc_configurations/**/*.json

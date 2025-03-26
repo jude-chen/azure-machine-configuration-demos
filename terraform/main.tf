@@ -74,7 +74,7 @@ resource "azurerm_storage_container" "demo-container" {
 # User assigned identity for policy assignment
 resource "azurerm_user_assigned_identity" "amcidentity" {
   location            = var.location
-  name                = "${var.resource_prefix}-identity"
+  name                = "${var.resource_prefix}-${random_string.suffix.result}-identity"
   resource_group_name = azurerm_resource_group.demo-rg.name
 }
 
@@ -84,20 +84,22 @@ resource "azurerm_role_assignment" "amci-role-assignment" {
   scope                = azurerm_resource_group.demo-rg.id
 }
 
-# Assign the built-in policy for deploy machine configuration
-resource "azurerm_resource_group_policy_assignment" "machine-config-policy-assignment" {
-  name                 = "${var.resource_prefix}-machineconfig-assignment"
+# Assign the built-in policy for deploying machine configuration prerequisites (system managed identity and GuestConfiguration extension)
+resource "azurerm_resource_group_policy_assignment" "prereq-policy-assignments" {
+  for_each             = var.policy_definition_ids
+  name                 = each.key
   resource_group_id    = azurerm_resource_group.demo-rg.id
   location             = var.location
-  policy_definition_id = "/providers/Microsoft.Authorization/policySetDefinitions/12794019-7a00-42cf-95c2-882eed337cc8"
+  policy_definition_id = each.value
   identity {
     type = "SystemAssigned"
   }
 }
 
 # Assign the "contributor" role to the policy assignment identity for remediation
-resource "azurerm_role_assignment" "machine-config-policy-role-assignment" {
-  principal_id         = azurerm_resource_group_policy_assignment.machine-config-policy-assignment.identity[0].principal_id
+resource "azurerm_role_assignment" "prereq-policy-role-assignments" {
+  for_each             = var.policy_definition_ids
+  principal_id         = azurerm_resource_group_policy_assignment.prereq-policy-assignments[each.key].identity[0].principal_id
   role_definition_name = "Contributor"
   scope                = azurerm_resource_group.demo-rg.id
 }

@@ -45,7 +45,7 @@ resource "azurerm_windows_virtual_machine" "testvm" { // Note: never hardcode cr
       azurerm_user_assigned_identity.amcidentity.id,
     ]
   }
-  depends_on = [azurerm_resource_group_policy_assignment.machine-config-policy-assignment]
+  depends_on = [azurerm_resource_group_policy_assignment.prereq-policy-assignments]
 }
 
 # Alternatively, install the extension using the code below instead of using the built-in policy initiative.
@@ -58,10 +58,15 @@ resource "azurerm_windows_virtual_machine" "testvm" { // Note: never hardcode cr
 #   auto_upgrade_minor_version = true
 # }
 
-# probably not needed
-# resource "azurerm_role_assignment" "vm-identity-role-assignment" {
-#   principal_id         = azurerm_windows_virtual_machine.testvm.identity[0].principal_id
-#   role_definition_name = "Storage Blob Data Reader"
-#   scope                = azurerm_resource_group.demo-rg.id
+# Alternatively, assign the configuration using the code below instead of using the custom configuration policy.
+# resource "azurerm_policy_virtual_machine_configuration_assignment" "settimezonecst-assignment" {
+#   name               = "SetTimezoneCST"
+#   location           = azurerm_resource_group.demo-rg.location
+#   virtual_machine_id = azurerm_windows_virtual_machine.testvm.id
+#   configuration {
+#     assignment_type = "ApplyAndAutoCorrect"
+#     content_uri     = "${azurerm_storage_container.demo-container.id}/SetTimezoneCST.zip"
+#     content_hash    = filesha256("../dsc_configurations/SetTimezoneCST.zip")
+#     version         = "1.0.0"
+#   }
 # }
-
