@@ -24,3 +24,9 @@ variable "policy_definition_ids" {
     machine_config_prereq_policy_mui = "/providers/Microsoft.Authorization/policySetDefinitions/2b0ce52e-301c-4221-ab38-1601e2b4cee3"
   }
 }
+
+variable "container_name" {
+  description = "The name of the storage container for publishing the configuration packages."
+  type        = string
+  default     = "machine-configurations"
+}

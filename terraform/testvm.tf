@@ -56,17 +56,25 @@ resource "azurerm_windows_virtual_machine" "testvm" { // Note: never hardcode cr
 #   type                       = "ConfigurationForWindows"
 #   type_handler_version       = "1.1"
 #   auto_upgrade_minor_version = true
+#   automatic_upgrade_enabled  = true
 # }
 
 # Alternatively, assign the configuration using the code below instead of using the custom configuration policy.
-# resource "azurerm_policy_virtual_machine_configuration_assignment" "settimezonecst-assignment" {
-#   name               = "SetTimezoneCST"
-#   location           = azurerm_resource_group.demo-rg.location
-#   virtual_machine_id = azurerm_windows_virtual_machine.testvm.id
-#   configuration {
-#     assignment_type = "ApplyAndAutoCorrect"
-#     content_uri     = "${azurerm_storage_container.demo-container.id}/SetTimezoneCST.zip"
-#     content_hash    = filesha256("../dsc_configurations/SetTimezoneCST.zip")
-#     version         = "1.0.0"
+# resource "azapi_resource" "settimezonecst-assignment" {
+#   type      = "Microsoft.GuestConfiguration/guestConfigurationAssignments@2024-04-05"
+#   name      = "SetTimezoneCST"
+#   parent_id = azurerm_windows_virtual_machine.testvm.id
+#   location  = azurerm_resource_group.demo-rg.location
+#   body = {
+#     properties = {
+#       guestConfiguration = {
+#         name                   = "SetTimeZoneCST"
+#         assignmentType         = "ApplyAndAutoCorrect"
+#         contentHash            = filesha256("../dsc_configurations/timezone/SetTimeZoneCST.zip")
+#         contentManagedIdentity = azurerm_user_assigned_identity.amcidentity.id
+#         contentUri             = "${azurerm_storage_account.demo-sa.primary_blob_endpoint}${var.container_name}/SetTimeZoneCST.zip"
+#         version                = "1.0.0"
+#       }
+#     }
 #   }
 # }

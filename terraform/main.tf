@@ -66,7 +66,7 @@ resource "azurerm_storage_account" "demo-sa" {
 }
 
 resource "azurerm_storage_container" "demo-container" {
-  name                  = "machine-configurations"
+  name                  = var.container_name
   storage_account_id    = azurerm_storage_account.demo-sa.id
   container_access_type = "private"
 }
@@ -85,6 +85,7 @@ resource "azurerm_role_assignment" "amci-role-assignment" {
 }
 
 # Assign the built-in policy for deploying machine configuration prerequisites (system managed identity and GuestConfiguration extension)
+# Comment the below two resource blocks out if you want to deploy the extension in Terraform instead of policy
 resource "azurerm_resource_group_policy_assignment" "prereq-policy-assignments" {
   for_each             = var.policy_definition_ids
   name                 = each.key
